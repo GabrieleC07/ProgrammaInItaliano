@@ -1,94 +1,92 @@
-use crate::lexer::lexer::{Token, TokenType};
+use crate::lexer::tokens::*;
 
-pub fn parse(tokens: Vec<Token>) -> Option<NodeExit> {
-    let mut tokens_clone = tokens.clone();
+use crate::parser::nodes::*;
 
-    let result = parse_node_exit(&mut tokens_clone);
-
-    result
+pub struct Parser {
+    tokens: Vec<Token>,
+    current: usize,
 }
 
-fn parse_node_exit(tokens: &mut Vec<Token>) -> Option<NodeExit> {
-    let mut tokens_clone = tokens.clone();
-
-    if tokens_clone.is_empty() {
-        return None;
+impl Parser {
+    pub fn new(tokens: Vec<Token>) -> Self {
+        Parser {
+            tokens,
+            current: 0,
+        }
     }
 
-    let first_token = peek_token(0, &tokens_clone);
-    if first_token.is_some() && first_token.unwrap().token_type != TokenType::Ret {
-        eprintln!("Not Found Ret");
-        return None;
+    // Helper to get the current token
+    fn current_token(&self) -> Token {
+        self.tokens.get(self.current).cloned().unwrap_or_else(|| Token::new(TokenType::EoF)).clone()
     }
-    consume_token(0, &mut tokens_clone);
 
-    let open_paren_token = peek_token(0, &tokens_clone);
-    if open_paren_token.is_some() && open_paren_token.unwrap().token_type != TokenType::OpenParen {
-        eprintln!("Not Found OpenParen");
-        return None;
+    // Helper to advance to the next token
+    fn advance(&mut self) {
+        if self.current < self.tokens.len() {
+            self.current += 1;
+        }
     }
-    consume_token(0, &mut tokens_clone);
 
-    let int_lit_token = peek_token(0, &tokens_clone);
-    if int_lit_token.is_some() && int_lit_token.unwrap().token_type != TokenType::IntLit {
-        eprintln!("Not Found IntLit");
-        return None;
+    // Helper to check the current token type
+    fn match_token(&self, token_type: &TokenType) -> bool {
+        &self.current_token().token_type == token_type
     }
-    let int_lit_token = consume_token(0, &mut tokens_clone);
-
-    let closed_paren_token = peek_token(0, &tokens_clone);
-    if closed_paren_token.is_some() && closed_paren_token.unwrap().token_type != TokenType::ClosedParen {
-        eprintln!("Not Found ClosedParen");
-        return None;
-    }
-    consume_token(0, &mut tokens_clone);
-
-    // Update main tokens accordingly if succesful
-    consume_token(0, tokens);
-    consume_token(0, tokens);
-    consume_token(0, tokens);
-    consume_token(0, tokens);
     
-    Some(
-        NodeExit::new(
-            NodeExpr::new(int_lit_token.unwrap())
-        )
-    )
-}
-
-fn consume_token(index: usize, tokens: &mut Vec<Token>) -> Option<Token> {
-    if tokens.len() <= index {
-        return None;
-    }
-    Some(tokens.remove(index))
-}
-
-fn peek_token(index: usize, tokens: &Vec<Token>) -> Option<Token> {
-    if tokens.len() <= index {
-        return None;
-    }
-    Some(tokens[index].clone())
-}
-#[derive(Debug, PartialEq)]
-pub struct NodeExit {
-    pub expr: NodeExpr
-}
-
-impl NodeExit {
-    pub fn new(expr: NodeExpr) -> NodeExit {
-        NodeExit {
-            expr
+    pub fn parse(&mut self) -> Result<Vec<NodeStmt>, String> {
+        let mut stmts = Vec::new();
+        while !self.match_token(&TokenType::EoF) {
+            stmts.push(self.parse_stmt()?);
         }
+        Ok(stmts)
     }
-}
-#[derive(Debug, PartialEq)]
-pub struct NodeExpr {
-    pub int_lit: Token
-}
-impl NodeExpr {
-    pub fn new(int_lit: Token) -> NodeExpr {
-        NodeExpr {
-            int_lit
+
+    fn parse_stmt(&mut self) -> Result<NodeStmt, String> {
+        if self.match_token(&TokenType::Ret) {
+            self.advance(); // Consume 'return'
+
+            if self.match_token(&TokenType::OpenParen) {
+                self.advance(); // Consume '('
+
+                let node_expr = self.parse_node_expr()?;
+                if self.match_token(&TokenType::ClosedParen) {
+                    self.advance(); // Consume ')'
+
+                    return Ok(NodeStmt::Return(node_expr));
+                } 
+                return Err(String::from("Expected '('"));
+            } 
+            return Err(String::from("Expected ')'"));
         }
+        else if self.match_token(&TokenType::Var) {
+            self.advance(); // Consume 'var'
+
+            if let TokenType::Ident(name) = self.current_token().token_type.clone() {
+                self.advance(); // consume Ident
+
+                if self.match_token(&TokenType::Eq) {
+                    self.advance(); // consume '='
+
+                    let node_expr = self.parse_node_expr()?;
+                    return Ok(NodeStmt::VarDecl(name, node_expr));
+                }
+                return Err(String::from("Expected '='"));
+                
+            }
+            return Err(String::from("Expected an identifier after 'var'"));
+        }
+        Err(String::from("Unexpected token"))
+    }
+
+    fn parse_node_expr(&mut self) -> Result<NodeExpr, String> {
+        if let TokenType::IntLit(value) = self.current_token().token_type {
+            self.advance(); // consume integer literal
+            return Ok(NodeExpr::IntLiteral(value));  
+        }
+        else if let TokenType::Ident(ref name) = self.current_token().token_type {
+            self.advance(); // consume identifier
+            return Ok(NodeExpr::Identifier(name.clone()));
+        }
+
+        Err(String::from("Unexpected token in NodeExpression"))
     }
 }

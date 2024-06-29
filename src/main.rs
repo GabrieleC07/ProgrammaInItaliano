@@ -1,28 +1,38 @@
+use code_gen::code_gen::CodeGenerator;
+use file::write_to_file;
+
 mod file;
 
 mod lexer;
-use lexer::lexer as lx;
 
 mod parser;
 
 mod code_gen;
 
-fn main() -> Result<(), std::io::Error> {
+mod test;
 
+fn main() -> Result<(), std::io::Error> {
     let contents = file::get_file_contents()?;
-    let tokens = lx::run(contents);
+
+    let tokens = lexer::lexer::run(contents);
 
     if tokens.is_none() {
         panic!("Lexer didnt found any tokens");
     }
+
+    let mut parser = parser::parser::Parser::new(tokens.unwrap());
+    let nodes = parser.parse();
+
+    let stmts = match nodes {
+        Ok(val) => val,
+        Err(e) => panic!("Compiling error! {}", e)
+    };
+
+    let mut code_generator = CodeGenerator::new();
+
+    let code = code_generator.generate(stmts);
+
+    write_to_file("build/out.c", &code.clone())?;
     
-    let node = parser::parser::parse(tokens.clone().unwrap());
-
-    if node.is_none() {
-        panic!("Parser didnt found any nodes");
-    }
-
-    code_gen::code_gen::gen(node.unwrap())?;
-
     Ok(())
 }

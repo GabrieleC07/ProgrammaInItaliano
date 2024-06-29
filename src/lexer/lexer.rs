@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use crate::lexer::tokens::*;
 
 pub fn run(data: String) -> Option<Vec<Token>> {
     let keywords_map = create_keyword_map();
@@ -27,6 +28,9 @@ pub fn run(data: String) -> Option<Vec<Token>> {
             if let Some(token) = process_word(&buffer_word, &keywords_map) {
                 tokens.push(token);
             }
+            else {
+                tokens.push(Token::new(TokenType::Ident(buffer_word.clone())))
+            }
         }
         else if ch.is_numeric() || ch == '-' {
             let mut buffer_number = String::new();
@@ -43,7 +47,7 @@ pub fn run(data: String) -> Option<Vec<Token>> {
                 }
             }
             if let Ok(num) = buffer_number.parse::<i32>() {
-                tokens.push(Token::new(TokenType::IntLit, Some(num)));
+                tokens.push(Token::new(TokenType::IntLit(num as isize)));
             }
         } else {
             buffer_word.clear();
@@ -58,38 +62,17 @@ pub fn run(data: String) -> Option<Vec<Token>> {
 }
 
 fn process_word(word: &str, keywords_map: &HashMap<String, TokenType>) -> Option<Token> {
-    keywords_map.get(word).cloned().map(|token_type| Token::new(token_type, None))
+    keywords_map.get(word).cloned().map(|token_type| Token::new(token_type))
 }
 
 fn create_keyword_map() -> HashMap<String, TokenType> {
     let mut map = HashMap::new();
 
-    map.insert("return".to_string(), TokenType::Ret);
-    map.insert("(".to_string(), TokenType::OpenParen);
-    map.insert(")".to_string(), TokenType::ClosedParen);
+    map.insert(String::from("return"), TokenType::Ret);
+    map.insert(String::from("("), TokenType::OpenParen);
+    map.insert(String::from(")"), TokenType::ClosedParen);
+    map.insert(String::from("var"), TokenType::Var);
+    map.insert(String::from("="), TokenType::Eq);
     
     map
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum TokenType {
-    Ret,
-    IntLit,
-    OpenParen,
-    ClosedParen,
-}
-
-#[derive(Debug, PartialEq, Clone)]
-pub struct Token {
-    pub token_type: TokenType,
-    pub value: Option<i32>,
-}
-
-impl Token {
-    pub fn new(token_type: TokenType, value: Option<i32>) -> Token {
-        Token {
-            token_type,
-            value,
-        }
-    }
 }
