@@ -52,6 +52,17 @@ impl CodeGenerator {
             NodeExpr::Identifier(name) => {
                 self.output.push_str(&name);
             }
+            NodeExpr::MathOperat(left, operator, right) => {
+                self.visit_expr(*left);
+                let string_op = match operator {
+                    crate::lexer::tokens::Operator::Plus => "+",
+                    crate::lexer::tokens::Operator::Minus => "-",
+                    crate::lexer::tokens::Operator::Mul => "*",
+                    crate::lexer::tokens::Operator::Div => "/",
+                };
+                self.output.push_str(string_op);
+                self.visit_expr(*right);
+            }
         }
     }
 }

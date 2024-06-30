@@ -1,5 +1,4 @@
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[allow(dead_code)]
 pub enum TokenType {
     Ret,
     IntLit(isize),
@@ -8,19 +7,25 @@ pub enum TokenType {
     Ident(String),
     Var,
     Eq,
+    Operators(Operator),
     EoF,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Token {
-    pub token_type: TokenType,
-    // pub value: Option<i32>,
+    pub kind: TokenType,
 }
-
+#[derive(Debug, PartialEq, Clone, Eq, Hash)]
+pub enum Operator {
+    Plus,
+    Minus,
+    Mul,
+    Div,
+}
 impl Token {
-    pub fn new(token_type: TokenType) -> Token {
+    pub fn new(kind: TokenType) -> Token {
         Token {
-            token_type
+            kind
         }
     }
 }

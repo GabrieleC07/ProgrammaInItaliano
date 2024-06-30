@@ -1,20 +1,29 @@
 $$
 \begin{align}
 
-    [\text{Prog}] &\to [\text{stmt}]^+
+    [\text{Prog}] &\to [\text{Stmt}]^+
     \\
-    [\text{stmt}] &\to 
+    [\text{Stmt}] &\to 
         \begin{cases}
-            \text{return([\text{expr}])}
+            \text{return([\text{Expr}])}
             \\
-            \text{var} \space ident \space \text{= [expr]} 
+            \text{var} \space ident \space \text{= [Expr]} 
         \end{cases}
     \\
-    [\text{expr}] &\to 
+    [\text{Expr}] &\to 
         \begin{cases}
                 \text{int\_lit}
                 \\
                 \text{ident}
+                \\
+                \text{[MathExpr]}
+        \end{cases}
+    \\
+    \text{[MathExpr]} &\to 
+        \begin{cases}
+            \text{[Expr] * [Expr] order = 1}
+            \\
+            \text{[Expr] + [Expr] order = 0}
         \end{cases}
 
 \end{align}

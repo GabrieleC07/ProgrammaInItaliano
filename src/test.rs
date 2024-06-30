@@ -7,7 +7,7 @@ mod tests {
     fn lexer_return_multiple_number_positive() {
         assert_eq!(lexer::run(String::from("return(91)")).unwrap(), vec![
             Token::new(TokenType::Ret),
-            Token::new(TokenType::ClosedParen),            
+            Token::new(TokenType::OpenParen),            
             Token::new(TokenType::IntLit(91)),
             Token::new(TokenType::ClosedParen),
         ]);

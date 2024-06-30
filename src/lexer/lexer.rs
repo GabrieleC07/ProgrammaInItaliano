@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use crate::lexer::tokens::*;
+use crate::lexer::tokens::Operator;
 
 pub fn run(data: String) -> Option<Vec<Token>> {
     let keywords_map = create_keyword_map();
@@ -73,6 +74,10 @@ fn create_keyword_map() -> HashMap<String, TokenType> {
     map.insert(String::from(")"), TokenType::ClosedParen);
     map.insert(String::from("var"), TokenType::Var);
     map.insert(String::from("="), TokenType::Eq);
+    map.insert(String::from("+"), TokenType::Operators(Operator::Plus));
+    map.insert(String::from("-"), TokenType::Operators(Operator::Minus));
+    map.insert(String::from("*"), TokenType::Operators(Operator::Mul));
+    map.insert(String::from("/"), TokenType::Operators(Operator::Div));
     
     map
 }

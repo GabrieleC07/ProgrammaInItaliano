@@ -19,18 +19,24 @@ fn main() -> Result<(), std::io::Error> {
     if tokens.is_none() {
         panic!("Lexer didnt found any tokens");
     }
+    println!("Tokens {:?}", tokens.clone().unwrap());
 
     let mut parser = parser::parser::Parser::new(tokens.unwrap());
-    let nodes = parser.parse();
+    let mut nodes = parser.parse_prog();
+
+    println!("Nodes {:?}", nodes.as_mut().unwrap());
 
     let stmts = match nodes {
         Ok(val) => val,
         Err(e) => panic!("Compiling error! {}", e)
     };
 
+
     let mut code_generator = CodeGenerator::new();
 
     let code = code_generator.generate(stmts);
+
+    println!("Code {:?}", code.clone());
 
     write_to_file("build/out.c", &code.clone())?;
     
