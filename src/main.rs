@@ -19,7 +19,6 @@ fn main() -> Result<(), std::io::Error> {
     if tokens.is_none() {
         panic!("Lexer didnt found any tokens");
     }
-    println!("Tokens {:?}", tokens.clone().unwrap());
 
     let mut parser = parser::parser::Parser::new(tokens.unwrap());
     let mut nodes = parser.parse_prog();

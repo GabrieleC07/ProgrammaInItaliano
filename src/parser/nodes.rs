@@ -11,5 +11,20 @@ pub enum NodeStmt {
 pub enum NodeExpr {
     IntLiteral(isize),
     Identifier(String),
-    MathOperat(Box<NodeExpr>, Operator, Box<NodeExpr>)
+    MathOperat(NodeMathExpr)
+}
+#[derive(Debug)]
+pub struct NodeMathExpr {
+    pub left_side: Box<NodeExpr>,
+    pub operator: Operator,
+    pub right_side: Box<NodeExpr>,
+}
+impl NodeMathExpr {
+    pub fn new(left: NodeExpr, operator: Operator, right: NodeExpr) -> NodeMathExpr {
+        NodeMathExpr {
+            left_side: Box::new(left),
+            operator,
+            right_side: Box::new(right)
+        }
+    }
 }
