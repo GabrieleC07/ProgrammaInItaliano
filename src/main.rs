@@ -1,5 +1,5 @@
 use code_gen::code_gen::CodeGenerator;
-use file::write_to_file;
+use file::{compile_c_to_out, remove_c_file, write_to_file};
 
 mod file;
 
@@ -21,23 +21,24 @@ fn main() -> Result<(), std::io::Error> {
     }
 
     let mut parser = parser::parser::Parser::new(tokens.unwrap());
-    let mut nodes = parser.parse_prog();
-
-    println!("Nodes {:?}", nodes.as_mut().unwrap());
+    let nodes = parser.parse_prog();
 
     let stmts = match nodes {
         Ok(val) => val,
         Err(e) => panic!("Compiling error! {}", e)
     };
 
-
     let mut code_generator = CodeGenerator::new();
 
     let code = code_generator.generate(stmts);
 
-    println!("Code {:?}", code.clone());
+    let path_c = "build/out.c";
+    let path_output = "build/a.out";
+    write_to_file(&path_c, &code.clone())?;
 
-    write_to_file("build/out.c", &code.clone())?;
+    compile_c_to_out(&path_c, path_output);
+
+    remove_c_file(&path_c)?;
     
     Ok(())
 }

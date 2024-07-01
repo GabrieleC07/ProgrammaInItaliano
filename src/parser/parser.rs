@@ -59,12 +59,10 @@ impl Parser {
             self.advance(); // Consume 'var'
 
             if let TokenType::Ident(name) = self.current_token(0).kind {
-                println!("Entered ident");
                 self.advance(); // Consume Ident
 
                 if self.match_token(&TokenType::Eq) {
                     self.advance(); // Consume '='
-                    println!("Entered eq");
 
                     let node_expr = self.parse_node_expr()?;
                     return Ok(NodeStmt::VarDecl(name, node_expr));
@@ -78,13 +76,16 @@ impl Parser {
     fn parse_node_expr(&mut self) -> Result<NodeExpr, String> {
         if let TokenType::IntLit(value) = self.current_token(0).kind {
             self.advance(); // Consume the literal
+
             if let TokenType::Operators(_) = self.current_token(0).kind {
                 return self.parse_math_expr(NodeExpr::IntLiteral(value));
             } else {
                 return Ok(NodeExpr::IntLiteral(value));
             }
+
         } else if let TokenType::Ident(name) = self.current_token(0).kind {
             self.advance(); // Consume the identifier
+
             if let TokenType::Operators(_) = self.current_token(0).kind {
                 return self.parse_math_expr(NodeExpr::Identifier(name));
             } else {
@@ -98,6 +99,7 @@ impl Parser {
     fn parse_math_expr(&mut self, left_expr: NodeExpr) -> Result<NodeExpr, String> {
         if let TokenType::Operators(op) = self.current_token(0).kind {
             self.advance(); // Consume the operator
+            
             let right_expr = self.parse_node_expr()?;
             Ok(NodeExpr::MathOperat(NodeMathExpr::new(left_expr, op, right_expr)))
         } else {
