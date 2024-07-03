@@ -11,4 +11,4 @@ c) Become the most powerful being in the universe and disintigrate them"
 
 This is my first open source project, so this whole page will SUCK.
 
-Sorry about it :)
+Sorry :)
