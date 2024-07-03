@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use crate::lexer::tokens::*;
-use crate::lexer::tokens::Operator;
 
 pub fn run(data: String) -> Option<Vec<Token>> {
     let keywords_map = create_keyword_map();
@@ -64,23 +63,4 @@ pub fn run(data: String) -> Option<Vec<Token>> {
 
 fn process_word(word: &str, keywords_map: &HashMap<String, TokenType>) -> Option<Token> {
     keywords_map.get(word).cloned().map(|token_type| Token::new(token_type))
-}
-
-fn create_keyword_map() -> HashMap<String, TokenType> {
-    let mut map = HashMap::new();
-
-    map.insert(String::from("return"), TokenType::Ret);
-    map.insert(String::from("("), TokenType::OpenParen);
-    map.insert(String::from(")"), TokenType::ClosedParen);
-    map.insert(String::from("var"), TokenType::Var);
-    map.insert(String::from("="), TokenType::Eq);
-    map.insert(String::from("+"), TokenType::Operators(Operator::Plus));
-    map.insert(String::from("-"), TokenType::Operators(Operator::Minus));
-    map.insert(String::from("*"), TokenType::Operators(Operator::Mul));
-    map.insert(String::from("/"), TokenType::Operators(Operator::Div));
-    map.insert(String::from("fn"), TokenType::Fn);
-    map.insert(String::from("{"), TokenType::OpenCurlyBracket);
-    map.insert(String::from("}"), TokenType::ClosedCurlyBracket);
-    
-    map
 }

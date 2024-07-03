@@ -28,6 +28,25 @@
         \end{cases}
     \\
     \text{Scope} &\to \text{\{}\ [\text{Stmt}]^+ \text{\}}
+    \\
+    \text{If} &\to 
+        \begin{cases}
+            bool &\to 
+                \begin{cases}
+                \text{true} &\to \text{\{}\ [\text{Stmt}]^+ \text{\}}
+                \\
+                \text{false}
+            \end{cases}
+        \end{cases}
+    \\
+    \text{bool} &\to 
+        \begin{cases}
+            \text{true}
+            \\
+            \text{false}
+        \end{cases}
+    \\
+    \text{Equality} &\to \text{[Expr]} == \text{[Expr]}
 \end{align}
 
 $$

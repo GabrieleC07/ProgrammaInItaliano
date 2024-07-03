@@ -76,6 +76,9 @@ impl Parser {
         else if self.match_token(&TokenType::OpenCurlyBracket) {
             return self.parse_scope();
         }
+        else if self.match_token(&TokenType::If) {
+            return self.parse_if();
+        }
         Err(format!("Unexpected token {:?}", self.current_token(0)))
     }
     
@@ -123,5 +126,28 @@ impl Parser {
             return Ok(NodeStmt::Scope(stmts));
         }
         Err("Did not find any stmts in scope".to_string())
+    }
+    fn parse_if(&mut self) -> Result<NodeStmt, String> {
+        self.advance(); // Consume 'if'
+
+        let condition = self.parse_equality()?;
+
+        let scope = self.parse_scope()?;
+
+        let boxed_ifsmtt = Box::new(NodeIfStmt::new(scope, condition));
+        
+        Ok(NodeStmt::If(boxed_ifsmtt))
+
+    }
+    fn parse_equality(&mut self) -> Result<NodeEquality, String> {
+        let right_expr = self.parse_node_expr()?;
+        self.advance(); // Consume '='
+        self.advance(); // Consume '='
+        let left_expr = self.parse_node_expr()?;
+
+        Ok(NodeEquality {
+            right_expr,
+            left_expr,
+        })
     }
 }

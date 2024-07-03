@@ -12,6 +12,11 @@ impl CodeGenerator {
             scope: 0,
         }
     }
+    fn indent(&mut self) {
+        for _i in 0..=self.scope {
+            self.output.push_str("  ");
+        }
+    }
 
     pub fn generate(&mut self, stmts: Vec<NodeStmt>) -> String {
         self.output.push_str("#include <stdio.h>\n\n");
@@ -27,26 +32,8 @@ impl CodeGenerator {
         match stmt {
             NodeStmt::Return(expr) => self.visit_return(expr),
             NodeStmt::VarDecl(name, expr) => self.visit_var_decl(name, expr),
-            NodeStmt::Scope(stms) => { 
-                for stmt in stms {
-                    
-                    for i in 0..=self.scope {
-                        self.output.push_str("  ");
-                    }
-                    self.output.push_str("{ \n");
-
-                    for i in 0..=self.scope {
-                        self.output.push_str("  ");
-                    }
-
-                    self.visit_stmt(stmt);
-
-                    for i in 0..=self.scope {
-                        self.output.push_str("  ");
-                    }
-                    self.output.push_str("} \n");
-                }
-            }
+            NodeStmt::Scope(stmts) => self.visit_scope(stmts),
+            NodeStmt::If(stmt) => self.visit_if(*stmt),
         }
     }
 
@@ -79,15 +66,44 @@ impl CodeGenerator {
                 let string_op = match math_expr.operator {
                     crate::lexer::tokens::Operator::Plus => "+",
                     crate::lexer::tokens::Operator::Minus => "-",
-                    crate::lexer::tokens::Operator::Mul => "*",
-                    crate::lexer::tokens::Operator::Div => "/",
+                    crate::lexer::tokens::Operator::Star => "*",
+                    crate::lexer::tokens::Operator::FSlash => "/",
                 };
                 self.output.push_str(string_op);
                 self.visit_expr(*math_expr.right_side);
             }
         }
     }
-    fn visit_end_of_file(&mut self) {
+    fn visit_scope(&mut self, stmts: Vec<NodeStmt>) {
+            self.indent();
+            self.output.push_str("{ \n");
 
+            self.indent();
+            for stmt in stmts {
+                self.visit_stmt(stmt);
+                self.indent();
+            }
+
+            self.output.push_str("} \n");
+    }
+    fn visit_if(&mut self, ifstmt: NodeIfStmt) {
+        self.output.push_str("if( ");
+
+        self.visit_equality(ifstmt.condition);
+
+        self.output.push_str(")");
+
+
+        match ifstmt.scope {
+            NodeStmt::Scope(scope) => {
+                self.visit_scope(scope)
+            }
+            _ => {}
+        }
+    }
+    fn visit_equality(&mut self, node_eq: NodeEquality) {
+        self.visit_expr(node_eq.left_expr);
+        self.output.push_str(" == ");
+        self.visit_expr(node_eq.right_expr);
     }
 }

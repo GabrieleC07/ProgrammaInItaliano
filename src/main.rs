@@ -20,6 +20,8 @@ fn main() -> Result<(), std::io::Error> {
         panic!("Lexer didnt found any tokens");
     }
 
+    println!("{:?}", tokens.clone());
+
     let mut parser = parser::parser::Parser::new(tokens.unwrap());
     let nodes_result = parser.parse_prog();
 
@@ -28,8 +30,6 @@ fn main() -> Result<(), std::io::Error> {
         Ok(val) => val,
         Err(e) => panic!("Compiling error! {}", e)
     };
-
-    println!("nodes: {:?}", nodes.clone());
 
 
     let mut code_generator = CodeGenerator::new();
@@ -42,7 +42,7 @@ fn main() -> Result<(), std::io::Error> {
 
     compile_c_to_out(&path_c, path_output);
 
-    // remove_c_file(&path_c)?;
+    remove_c_file(&path_c)?;
     
     Ok(())
 }

@@ -1,11 +1,11 @@
 use crate::lexer::tokens::Operator;
 
-
 #[derive(Debug, Clone)]
 pub enum NodeStmt {
     Return(NodeExpr),
     VarDecl(String, NodeExpr),
     Scope(Vec<NodeStmt>),
+    If(Box<NodeIfStmt>)
 }
 
 #[derive(Debug, Clone)]
@@ -13,6 +13,24 @@ pub enum NodeExpr {
     IntLiteral(isize),
     Identifier(String),
     MathOperat(NodeMathExpr)
+}
+#[derive(Debug, Clone)]
+pub struct NodeIfStmt {
+    pub scope: NodeStmt,
+    pub condition: NodeEquality,
+}
+impl NodeIfStmt {
+    pub fn new(scope: NodeStmt, condition: NodeEquality) -> NodeIfStmt {
+        NodeIfStmt {
+            scope,
+            condition
+        }
+    }
+}
+#[derive(Debug, Clone)]
+pub struct NodeEquality {
+    pub right_expr: NodeExpr,
+    pub left_expr: NodeExpr,
 }
 #[derive(Debug, Clone)]
 pub struct NodeMathExpr {
