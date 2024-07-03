@@ -7,3 +7,8 @@ The language, currently unnamed, (Suggestions are very much appreciated :) ) is 
 a) Run 
 b) Scream 
 c) Become the most powerful being in the universe and disintigrate them"
+
+
+This is my first open source project, so this whole page will SUCK.
+
+Sorry about it :)
