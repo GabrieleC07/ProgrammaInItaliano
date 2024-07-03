@@ -1,19 +1,20 @@
 use crate::lexer::tokens::Operator;
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum NodeStmt {
     Return(NodeExpr),
     VarDecl(String, NodeExpr),
+    Scope(Vec<NodeStmt>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum NodeExpr {
     IntLiteral(isize),
     Identifier(String),
     MathOperat(NodeMathExpr)
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NodeMathExpr {
     pub left_side: Box<NodeExpr>,
     pub operator: Operator,

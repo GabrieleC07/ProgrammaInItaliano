@@ -2,12 +2,14 @@ use crate::parser::nodes::*;
 
 pub struct CodeGenerator {
     output: String,
+    scope: u8,
 }
 
 impl CodeGenerator {
     pub fn new() -> Self {
         CodeGenerator {
             output: String::new(),
+            scope: 0,
         }
     }
 
@@ -25,6 +27,26 @@ impl CodeGenerator {
         match stmt {
             NodeStmt::Return(expr) => self.visit_return(expr),
             NodeStmt::VarDecl(name, expr) => self.visit_var_decl(name, expr),
+            NodeStmt::Scope(stms) => { 
+                for stmt in stms {
+                    
+                    for i in 0..=self.scope {
+                        self.output.push_str("  ");
+                    }
+                    self.output.push_str("{ \n");
+
+                    for i in 0..=self.scope {
+                        self.output.push_str("  ");
+                    }
+
+                    self.visit_stmt(stmt);
+
+                    for i in 0..=self.scope {
+                        self.output.push_str("  ");
+                    }
+                    self.output.push_str("} \n");
+                }
+            }
         }
     }
 
@@ -64,5 +86,8 @@ impl CodeGenerator {
                 self.visit_expr(*math_expr.right_side);
             }
         }
+    }
+    fn visit_end_of_file(&mut self) {
+
     }
 }

@@ -21,16 +21,20 @@ fn main() -> Result<(), std::io::Error> {
     }
 
     let mut parser = parser::parser::Parser::new(tokens.unwrap());
-    let nodes = parser.parse_prog();
+    let nodes_result = parser.parse_prog();
 
-    let stmts = match nodes {
+
+    let nodes = match nodes_result {
         Ok(val) => val,
         Err(e) => panic!("Compiling error! {}", e)
     };
 
+    println!("nodes: {:?}", nodes.clone());
+
+
     let mut code_generator = CodeGenerator::new();
 
-    let code = code_generator.generate(stmts);
+    let code = code_generator.generate(nodes);
 
     let path_c = "build/out.c";
     let path_output = "build/a.out";
@@ -38,7 +42,7 @@ fn main() -> Result<(), std::io::Error> {
 
     compile_c_to_out(&path_c, path_output);
 
-    remove_c_file(&path_c)?;
+    // remove_c_file(&path_c)?;
     
     Ok(())
 }

@@ -8,7 +8,9 @@ pub enum TokenType {
     Var,
     Eq,
     Operators(Operator),
-    EoF,
+    Fn,
+    OpenCurlyBracket,
+    ClosedCurlyBracket,
 }
 
 #[derive(Debug, PartialEq, Clone)]

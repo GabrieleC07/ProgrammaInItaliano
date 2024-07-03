@@ -78,6 +78,9 @@ fn create_keyword_map() -> HashMap<String, TokenType> {
     map.insert(String::from("-"), TokenType::Operators(Operator::Minus));
     map.insert(String::from("*"), TokenType::Operators(Operator::Mul));
     map.insert(String::from("/"), TokenType::Operators(Operator::Div));
+    map.insert(String::from("fn"), TokenType::Fn);
+    map.insert(String::from("{"), TokenType::OpenCurlyBracket);
+    map.insert(String::from("}"), TokenType::ClosedCurlyBracket);
     
     map
 }
