@@ -1,5 +1,5 @@
 use code_gen::code_gen::CodeGenerator;
-use file::{compile_c_to_out, remove_c_file, write_to_file};
+use file::*;
 
 mod file;
 
@@ -28,7 +28,7 @@ fn main() -> Result<(), std::io::Error> {
 
     let nodes = match nodes_result {
         Ok(val) => val,
-        Err(e) => panic!("Compiling error! {}", e)
+        Err(e) => panic!("Parser error! {}", e)
     };
 
 
@@ -42,7 +42,7 @@ fn main() -> Result<(), std::io::Error> {
 
     compile_c_to_out(&path_c, path_output);
 
-    remove_c_file(&path_c)?;
+    // remove_c_file(&path_c)?;
     
     Ok(())
 }

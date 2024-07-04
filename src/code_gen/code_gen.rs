@@ -32,10 +32,22 @@ impl CodeGenerator {
         match stmt {
             NodeStmt::Return(expr) => self.visit_return(expr),
             NodeStmt::VarDecl(name, expr) => self.visit_var_decl(name, expr),
+            NodeStmt::VarShadowing(name, expr) => self.visit_var_shadowing(name, expr),
             NodeStmt::Scope(stmts) => self.visit_scope(stmts),
-            NodeStmt::If(stmt) => self.visit_if(*stmt),
+            NodeStmt::Functions(func) => {
+                match func {
+                    BuiltInFunctions::If(ifstmt) => { 
+                        self.visit_flow_control(BuiltInFunctions::If(ifstmt), "if");
+                        println!("Inside if");
+                    }
+                    BuiltInFunctions::While(whilestmt) => {
+                            self.visit_flow_control(BuiltInFunctions::While(whilestmt), "while");
+                            println!("INSIDE WHILE");
+                        }
+                    }
+                }
+            }
         }
-    }
 
     fn visit_return(&mut self, expr: NodeExpr) {
         self.output.push_str("    ");
@@ -52,6 +64,13 @@ impl CodeGenerator {
         self.visit_expr(expr);
         self.output.push_str(";\n");
     }
+    fn visit_var_shadowing(&mut self, name: String, expr: NodeExpr) {
+        self.output.push_str("    ");
+        self.output.push_str(&name);
+        self.output.push_str(" = ");
+        self.visit_expr(expr);
+        self.output.push_str(";\n");
+    }
 
     fn visit_expr(&mut self, expr: NodeExpr) {
         match expr {
@@ -62,7 +81,7 @@ impl CodeGenerator {
                 self.output.push_str(&name);
             }
             NodeExpr::MathOperat(math_expr) => {
-                self.visit_expr(*math_expr.left_side);
+                self.visit_expr(*math_expr.left_expr);
                 let string_op = match math_expr.operator {
                     crate::lexer::tokens::Operator::Plus => "+",
                     crate::lexer::tokens::Operator::Minus => "-",
@@ -70,7 +89,7 @@ impl CodeGenerator {
                     crate::lexer::tokens::Operator::FSlash => "/",
                 };
                 self.output.push_str(string_op);
-                self.visit_expr(*math_expr.right_side);
+                self.visit_expr(*math_expr.right_expr);
             }
         }
     }
@@ -86,19 +105,32 @@ impl CodeGenerator {
 
             self.output.push_str("} \n");
     }
-    fn visit_if(&mut self, ifstmt: NodeIfStmt) {
-        self.output.push_str("if( ");
+    fn visit_flow_control(&mut self, func_enum: BuiltInFunctions, kind: &str) {
+        self.output.push_str(&format!("{}(", kind));
 
-        self.visit_equality(ifstmt.condition);
+        let condition = match func_enum {
+            BuiltInFunctions::If(ref if_stmt) => &if_stmt.condition,
+            BuiltInFunctions::While(ref while_stmt) => &while_stmt.condition,
+        };
+
+        self.visit_equality(condition.clone());
 
         self.output.push_str(")");
 
-
-        match ifstmt.scope {
-            NodeStmt::Scope(scope) => {
-                self.visit_scope(scope)
+        
+        match func_enum {
+            BuiltInFunctions::If(if_stmt) => {
+                match if_stmt.scope {
+                    NodeStmt::Scope(stmts) => self.visit_scope(stmts),
+                    _ => {}
+                }
             }
-            _ => {}
+            BuiltInFunctions::While(while_stmt) => {
+                match while_stmt.scope {
+                    NodeStmt::Scope(stmts) => self.visit_scope(stmts),
+                    _ => {}
+                }
+            }
         }
     }
     fn visit_equality(&mut self, node_eq: NodeEquality) {

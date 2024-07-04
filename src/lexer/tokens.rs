@@ -13,9 +13,11 @@ pub enum TokenType {
     OpenCurlyBracket,
     ClosedCurlyBracket,
     If,
+    While,
     Operators(Operator),
     True,
     False,
+    ExclamationPoint,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -57,6 +59,8 @@ pub fn create_keyword_map() -> HashMap<String, TokenType> {
     map.insert(String::from("if"), TokenType::If);
     map.insert(String::from("true"), TokenType::True);
     map.insert(String::from("false"), TokenType::False);
+    map.insert(String::from("while"), TokenType::While);
+    map.insert(String::from("!"), TokenType::ExclamationPoint);
     
     map
 }

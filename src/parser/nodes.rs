@@ -4,8 +4,9 @@ use crate::lexer::tokens::Operator;
 pub enum NodeStmt {
     Return(NodeExpr),
     VarDecl(String, NodeExpr),
+    VarShadowing(String, NodeExpr),
     Scope(Vec<NodeStmt>),
-    If(Box<NodeIfStmt>)
+    Functions(BuiltInFunctions),
 }
 
 #[derive(Debug, Clone)]
@@ -15,17 +16,21 @@ pub enum NodeExpr {
     MathOperat(NodeMathExpr)
 }
 #[derive(Debug, Clone)]
+pub enum BuiltInFunctions {
+    If(Box<NodeIfStmt>),
+    While(Box<NodeWhileStmt>),
+}
+
+
+#[derive(Debug, Clone)]
 pub struct NodeIfStmt {
     pub scope: NodeStmt,
     pub condition: NodeEquality,
 }
-impl NodeIfStmt {
-    pub fn new(scope: NodeStmt, condition: NodeEquality) -> NodeIfStmt {
-        NodeIfStmt {
-            scope,
-            condition
-        }
-    }
+#[derive(Debug, Clone)]
+pub struct NodeWhileStmt {
+    pub scope: NodeStmt,
+    pub condition: NodeEquality,
 }
 #[derive(Debug, Clone)]
 pub struct NodeEquality {
@@ -34,16 +39,7 @@ pub struct NodeEquality {
 }
 #[derive(Debug, Clone)]
 pub struct NodeMathExpr {
-    pub left_side: Box<NodeExpr>,
+    pub left_expr: Box<NodeExpr>,
     pub operator: Operator,
-    pub right_side: Box<NodeExpr>,
-}
-impl NodeMathExpr {
-    pub fn new(left: NodeExpr, operator: Operator, right: NodeExpr) -> NodeMathExpr {
-        NodeMathExpr {
-            left_side: Box::new(left),
-            operator,
-            right_side: Box::new(right)
-        }
-    }
+    pub right_expr: Box<NodeExpr>,
 }

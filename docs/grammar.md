@@ -3,6 +3,8 @@
 \begin{align}
     [\text{Prog}] &\to [\text{Stmt}]^+
     \\
+    \text{Scope} &\to \text{\{}\ [\text{Stmt}]^+ \text{\}}
+    \\
     [\text{Stmt}] &\to 
         \begin{cases}
             \text{return([\text{Expr}])}
@@ -27,26 +29,21 @@
             \text{[Expr] + [Expr] order = 0}
         \end{cases}
     \\
-    \text{Scope} &\to \text{\{}\ [\text{Stmt}]^+ \text{\}}
+    \text{Equality} &\to \text{[Expr]} == \text{[Expr]}
     \\
-    \text{If} &\to 
+    \text{if} &\to 
         \begin{cases}
-            bool &\to 
-                \begin{cases}
-                \text{true} &\to \text{\{}\ [\text{Stmt}]^+ \text{\}}
-                \\
-                \text{false}
-            \end{cases}
-        \end{cases}
-    \\
-    \text{bool} &\to 
-        \begin{cases}
-            \text{true}
+            \text{true} \to \text{\{}\ [\text{Stmt}]^+ \text{\}}
             \\
             \text{false}
         \end{cases}
     \\
-    \text{Equality} &\to \text{[Expr]} == \text{[Expr]}
+    \text{while} &\to
+        \begin{cases}
+            \text{true} \to \text{\{}\ [\text{Stmt}]^+ \text{\}}
+                \\
+            \text{false}
+        \end{cases}
 \end{align}
 
 $$
