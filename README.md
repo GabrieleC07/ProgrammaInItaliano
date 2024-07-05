@@ -1,14 +1,15 @@
-# Unnamed-Compiler
+#ProgrammaInItaliano
 
-A compiler written in Rust for learning purposes, contributions are welcomed, especially if they're fixing my atrocious code.
+Un compilatore scritto in Rust per scopi didattici, i contributi sono benvenuti, soprattutto se correggono codice orribile.
+
+Il linguaggio è incentrato sul creare giochi di text story-based games, con scelte come "Vedi 3 uomini armati di fronte a te, cosa fai?
+a) Correre
+b) Urla
+c) Diventare l'essere più potente dell'universo e disintegrarli"
 
 
-The language, currently unnamed, (Suggestions are very much appreciated :) ) is mostly to create text-based story games, with choices, like "You see 3 armed man in front of you, what do you do?
-a) Run 
-b) Scream 
-c) Become the most powerful being in the universe and disintigrate them"
+Questo è il mio primo progetto open source, quindi l'intera pagina farà SCHIFO.
 
+Questo è il mio primo progetto open source, quindi l'intera pagina farà SCHIFO.
 
-This is my first open source project, so this whole page will SUCK.
-
-Sorry :)
+Scusate :)
