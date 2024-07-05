@@ -10,6 +10,4 @@ c) Diventare l'essere più potente dell'universo e disintegrarli"
 
 Questo è il mio primo progetto open source, quindi l'intera pagina farà SCHIFO.
 
-Questo è il mio primo progetto open source, quindi l'intera pagina farà SCHIFO.
-
 Scusate :)
