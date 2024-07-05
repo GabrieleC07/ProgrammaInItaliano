@@ -40,7 +40,6 @@ impl Parser {
             let stmt_parsed = self.parse_stmt()?;
             stmts.push(stmt_parsed);
         }
-        println!("Stmts: {:?}", stmts);
         Ok(stmts)
     }
 
@@ -56,26 +55,26 @@ impl Parser {
                 }
                 return Err(String::from("Expected ')'"));
             }
-            return Err(String::from("Expected '('"));
+            return Err(format!("Expected '(' found {:?}", self.current_token(0)));
         } 
         else if self.match_token(&TokenType::Var) {
             self.advance(); // Consume 'var'
-            if let Some(Token { kind: TokenType::Ident(name), .. }) = self.current_token(0) {
+            if let Some(Token { kind: TokenType::Ident(ident), .. }) = self.current_token(0) {
                 self.advance();
                 if self.match_token(&TokenType::Eq) {
                     self.advance();
                     let node_expr = self.parse_expr()?;
-                    return Ok(NodeStmt::VarDecl(name, node_expr));
+                    return Ok(NodeStmt::VarDecl(ident, node_expr));
                 }
             }
             return Err(String::from("Expected an identifier after 'var'"));
         }
-        else if let Some(Token { kind: TokenType::Ident(name), .. }) = self.current_token(0) {
+        else if let Some(Token { kind: TokenType::Ident(ident), .. }) = self.current_token(0) {
             self.advance(); // Consume 'ident'
             if self.match_token(&TokenType::Eq) {
                 self.advance(); // Consume '='
                 let expr = self.parse_expr()?;
-                return Ok(NodeStmt::VarShadowing(name, expr));
+                return Ok(NodeStmt::VarShadowing(ident, expr));
             }
             return Err("Expected '=' for Var Shadowing".to_string());
         }
@@ -84,6 +83,10 @@ impl Parser {
         }
         else if self.match_token(&TokenType::If) || self.match_token(&TokenType::While) {
             return self.parse_flow_control_fn();
+        }
+        else if self.match_token(&TokenType::PrintFn) {
+            let fn_call_node =  self.parse_fn_calling("print".to_string(), true)?;
+            return Ok(NodeStmt::FnCall(fn_call_node));
         }
         Err(format!("Unexpected {:?}, previous: {:?}, next {:?}", self.current_token(0), self.current_token(-1), self.current_token(1)))
     }
@@ -97,12 +100,12 @@ impl Parser {
             }
             return Ok(NodeExpr::IntLiteral(value));
         } 
-        else if let Some(Token { kind: TokenType::Ident(name), .. }) = self.current_token(0) {
+        else if let Some(Token { kind: TokenType::Ident(ident), .. }) = self.current_token(0) {
             self.advance();
             if let Some(Token { kind: TokenType::Operators(_), .. }) = self.current_token(0) {
-                return self.parse_math_expr(NodeExpr::Identifier(name));
+                return self.parse_math_expr(NodeExpr::Identifier(ident));
             }
-            return Ok(NodeExpr::Identifier(name));
+            return Ok(NodeExpr::Identifier(ident));
         }
         Err(format!("Unexpected: {:?}", self.current_token(0)))
     }
@@ -119,7 +122,8 @@ impl Parser {
                 operator,
                 right_expr 
             }))
-        } else {
+        }
+        else {
             Err(format!("Expected an operator, found {:?}", self.current_token(0)))
         }
     }
@@ -162,20 +166,26 @@ impl Parser {
             }
             _ => None
         };
-        Ok(NodeStmt::Functions(enum_stmt.unwrap()))
+        Ok(NodeStmt::CompilerBuiltInFunctions(enum_stmt.unwrap()))
     }
 
     fn parse_equality(&mut self) -> Result<NodeEquality, String> {
         let right_expr = self.parse_expr()?;
+        let mut _is_inequality = false;
 
         if !self.match_token(&TokenType::Eq) && !self.match_token(&TokenType::ExclamationPoint) {
-            println!("Token: {:?}, previous {:?}, next {:?}", self.current_token(0), self.current_token(-1), self.current_token(1));
             return Err("Expected '==' or '!='".to_string());
+        }
+
+        if self.match_token(&TokenType::ExclamationPoint) {
+            _is_inequality = true;
+        }
+        else {
+            _is_inequality = false;
         }
         self.advance(); // Consume '=' || '!'
 
         if !self.match_token(&TokenType::Eq) {
-            println!("2 Token: {:?}, previous {:?}, next {:?}", self.current_token(0), self.current_token(-1), self.current_token(1));
             return Err("Expected '==' or '!='".to_string());
         }
         self.advance(); // Consume '='
@@ -184,6 +194,30 @@ impl Parser {
         Ok(NodeEquality {
             right_expr,
             left_expr,
+            is_inequality: _is_inequality,
         })
+    }
+    fn parse_fn_calling(&mut self, name: String, is_built_in: bool) -> Result<NodeFnCall, String> {
+        self.advance(); // Consume fnname
+
+        if !self.match_token(&TokenType::OpenParen) {
+            return Err(format!("Expected '(' found {:?}, previous {:?}, next {:?}", self.current_token(0), self.current_token(-1), self.current_token(1)));
+        }
+        self.advance(); // Consume '('
+
+        if let Some(Token { kind: TokenType::String(argument), .. }) = self.current_token(0)  {
+            self.advance(); // Consume argument
+            if !self.match_token(&TokenType::ClosedParen) {
+                return Err(format!("Expected ')' found {:?}", self.current_token(0)));
+            }
+            self.advance(); // Consume ')'
+    
+            return Ok(NodeFnCall {
+                name,
+                is_built_in,
+                argument
+            });
+        }
+        return Err(format!("Expected argument String in print func! found {:?}", self.current_token(0)))        
     }
 }

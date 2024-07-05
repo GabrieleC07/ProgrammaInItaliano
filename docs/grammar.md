@@ -9,8 +9,15 @@
         \begin{cases}
             \text{return([\text{Expr}])}
             \\
-            \text{var} \space ident \space \text{= [Expr]}
+            \text{[Ident]}
             \\
+        \end{cases}
+    \\
+    \text{[Ident]} &\to 
+        \begin{cases}
+            \text{var ident = [NodeExpr]}
+            \\
+            \text{ident = [NodeExpr]}
         \end{cases}
     \\
     [\text{Expr}] &\to 
@@ -31,14 +38,14 @@
     \\
     \text{Equality} &\to \text{[Expr]} == \text{[Expr]}
     \\
-    \text{if} &\to 
+    \text{[If]} &\to 
         \begin{cases}
             \text{true} \to \text{\{}\ [\text{Stmt}]^+ \text{\}}
             \\
             \text{false}
         \end{cases}
     \\
-    \text{while} &\to
+    \text{[While]} &\to
         \begin{cases}
             \text{true} \to \text{\{}\ [\text{Stmt}]^+ \text{\}}
                 \\

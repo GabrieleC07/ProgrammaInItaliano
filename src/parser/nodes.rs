@@ -6,7 +6,8 @@ pub enum NodeStmt {
     VarDecl(String, NodeExpr),
     VarShadowing(String, NodeExpr),
     Scope(Vec<NodeStmt>),
-    Functions(BuiltInFunctions),
+    CompilerBuiltInFunctions(BuiltInFunctions),
+    FnCall(NodeFnCall)
 }
 
 #[derive(Debug, Clone)]
@@ -36,6 +37,13 @@ pub struct NodeWhileStmt {
 pub struct NodeEquality {
     pub right_expr: NodeExpr,
     pub left_expr: NodeExpr,
+    pub is_inequality: bool
+}
+#[derive(Debug, Clone)]
+pub struct NodeFnCall {
+    pub name: String,
+    pub is_built_in: bool,
+    pub argument: String,
 }
 #[derive(Debug, Clone)]
 pub struct NodeMathExpr {

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::parser::nodes::*;
 
 pub struct CodeGenerator {
@@ -34,18 +36,17 @@ impl CodeGenerator {
             NodeStmt::VarDecl(name, expr) => self.visit_var_decl(name, expr),
             NodeStmt::VarShadowing(name, expr) => self.visit_var_shadowing(name, expr),
             NodeStmt::Scope(stmts) => self.visit_scope(stmts),
-            NodeStmt::Functions(func) => {
+            NodeStmt::CompilerBuiltInFunctions(func) => {
                 match func {
                     BuiltInFunctions::If(ifstmt) => { 
                         self.visit_flow_control(BuiltInFunctions::If(ifstmt), "if");
-                        println!("Inside if");
                     }
                     BuiltInFunctions::While(whilestmt) => {
                             self.visit_flow_control(BuiltInFunctions::While(whilestmt), "while");
-                            println!("INSIDE WHILE");
                         }
                     }
                 }
+                NodeStmt::FnCall(fn_call_node) => self.visit_fn_call(fn_call_node),
             }
         }
 
@@ -135,7 +136,35 @@ impl CodeGenerator {
     }
     fn visit_equality(&mut self, node_eq: NodeEquality) {
         self.visit_expr(node_eq.left_expr);
-        self.output.push_str(" == ");
+
+        if node_eq.is_inequality {
+            self.output.push_str(" != ");
+        }
+        else {
+            self.output.push_str(" == ");
+        }
+
         self.visit_expr(node_eq.right_expr);
+    }
+    fn visit_fn_call(&mut self, node_fn_call: NodeFnCall) {
+        let map = self.create_built_in_func_map();
+
+        if node_fn_call.is_built_in {
+            let optional_c_name = map.get(&node_fn_call.name);
+            if optional_c_name.is_none() {
+                panic!("EXPECTED A BUILT-IN FUNCTION! GOT THIS {}", node_fn_call.name);
+            }
+            self.output.push_str(&format!("{}({});\n", optional_c_name.unwrap(), node_fn_call.argument))
+        }
+        else {
+            self.output.push_str(&format!("{}();", node_fn_call.name))
+        }
+    }
+    pub fn create_built_in_func_map(&mut self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+    
+        map.insert("print".to_string(), "printf".to_string());
+        
+        map
     }
 }

@@ -11,8 +11,10 @@ mod code_gen;
 
 mod test;
 
-fn main() -> Result<(), std::io::Error> {
+fn main() -> Result<(), std::io::Error> {    
     let contents = file::get_file_contents()?;
+    let args = file::get_arguments();
+    let is_in_debug = file::is_in_debug_mode(args);
 
     let tokens = lexer::lexer::run(contents);
 
@@ -20,10 +22,18 @@ fn main() -> Result<(), std::io::Error> {
         panic!("Lexer didnt found any tokens");
     }
 
-    println!("{:?}", tokens.clone());
+    if is_in_debug {
+        println!("\ntokens: {:?}\n", tokens.clone());
+    }
+
 
     let mut parser = parser::parser::Parser::new(tokens.unwrap());
+
     let nodes_result = parser.parse_prog();
+
+    if is_in_debug {
+        println!("\nnode result: {:?}\n", nodes_result)
+    }
 
 
     let nodes = match nodes_result {
@@ -42,7 +52,9 @@ fn main() -> Result<(), std::io::Error> {
 
     compile_c_to_out(&path_c, path_output);
 
-    // remove_c_file(&path_c)?;
+    if !is_in_debug {
+        remove_c_file(&path_c)?;
+    }
     
     Ok(())
 }

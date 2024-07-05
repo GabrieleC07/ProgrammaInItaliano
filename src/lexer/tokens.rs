@@ -7,6 +7,7 @@ pub enum TokenType {
     OpenParen,
     ClosedParen,
     Ident(String),
+    String(String),
     Var,
     Eq,
     Fn,
@@ -18,6 +19,7 @@ pub enum TokenType {
     True,
     False,
     ExclamationPoint,
+    PrintFn,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -44,7 +46,7 @@ impl Token {
 pub fn create_keyword_map() -> HashMap<String, TokenType> {
     let mut map = HashMap::new();
 
-    map.insert(String::from("return"), TokenType::Ret);
+    map.insert(String::from("ritorna"), TokenType::Ret);
     map.insert(String::from("("), TokenType::OpenParen);
     map.insert(String::from(")"), TokenType::ClosedParen);
     map.insert(String::from("var"), TokenType::Var);
@@ -56,11 +58,12 @@ pub fn create_keyword_map() -> HashMap<String, TokenType> {
     map.insert(String::from("fn"), TokenType::Fn);
     map.insert(String::from("{"), TokenType::OpenCurlyBracket);
     map.insert(String::from("}"), TokenType::ClosedCurlyBracket);
-    map.insert(String::from("if"), TokenType::If);
-    map.insert(String::from("true"), TokenType::True);
-    map.insert(String::from("false"), TokenType::False);
-    map.insert(String::from("while"), TokenType::While);
+    map.insert(String::from("se"), TokenType::If);
+    map.insert(String::from("vero"), TokenType::True);
+    map.insert(String::from("falso"), TokenType::False);
+    map.insert(String::from("finché"), TokenType::While);
     map.insert(String::from("!"), TokenType::ExclamationPoint);
+    map.insert(String::from("stampa"), TokenType::PrintFn);
     
     map
 }
