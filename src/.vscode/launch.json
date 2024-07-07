@@ -9,7 +9,7 @@
             "request": "launch",
             "name": "Debug",
             "program": "${workspaceFolder}/../target/debug/compiler",
-            "args": ["../return_2.ct"],
+            "args": ["../return_2.ita"],
             "cwd": "${workspaceFolder}"
         }
     ]

@@ -64,7 +64,7 @@ mod tests {
     fn lexer_numbers() {
         assert_eq!(lexer::run("1213 sasasa -123".to_string()).unwrap(), vec![
             Token::new(TokenType::IntLit(1213)),
-            Token::new(TokenType::Ident(String::from("sasasa"))),
+            Token::new(TokenType::Ident(String::from("sasasa"), None)),
             Token::new(TokenType::IntLit(-123)),
         ]); 
     }
@@ -72,12 +72,12 @@ mod tests {
     fn lexer_keywords() {
         assert_eq!(lexer::run("var x = 25 \n return(x)".to_string()).unwrap(), vec![
             Token::new(TokenType::Var),
-            Token::new(TokenType::Ident(String::from("x"))),
+            Token::new(TokenType::Ident(String::from("x"), None)),
             Token::new(TokenType::Eq),
             Token::new(TokenType::IntLit(25)),
             Token::new(TokenType::Ret), 
             Token::new(TokenType::OpenParen),
-            Token::new(TokenType::Ident(String::from("x"))),
+            Token::new(TokenType::Ident(String::from("x"), None)),
             Token::new(TokenType::ClosedParen),            
         ]); 
     }

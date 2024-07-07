@@ -14,6 +14,19 @@ impl Parser {
             current: 0,
         }
     }
+    fn replace_ident_token_type(&mut self, type_: VarDeclTypes, ident: Token, ident_name: String) -> bool {
+        let mut worked = false;
+        for token in self.tokens.iter_mut() {
+            if token.kind == ident.kind {
+                println!("token kind {:?};", token.kind);
+                token.kind = TokenType::Ident(ident_name.clone(), Some(type_.clone()));
+                println!("AFTER token kind {:?};", token.kind);
+                worked = true;
+            }
+        }
+
+        worked
+    }
 
     fn current_token(&self, offset: isize) -> Option<Token> {
         self.tokens.get((self.current as isize + offset) as usize).cloned()
@@ -28,7 +41,7 @@ impl Parser {
     fn match_token(&self, kind: &TokenType) -> bool {
         let current_token = self.current_token(0);
         
-        if current_token.is_some() && current_token.unwrap().kind == kind.clone() {
+        if current_token.is_some() && &current_token.clone().unwrap().kind == kind {
             return true;
         }
         false
@@ -37,6 +50,7 @@ impl Parser {
     pub fn parse_prog(&mut self) -> Result<Vec<NodeStmt>, String> {
         let mut stmts = Vec::new();
         while self.current < self.tokens.len() {
+            println!("stmts: {:?}", stmts);
             let stmt_parsed = self.parse_stmt()?;
             stmts.push(stmt_parsed);
         }
@@ -56,25 +70,16 @@ impl Parser {
                 return Err(String::from("Expected ')'"));
             }
             return Err(format!("Expected '(' found {:?}", self.current_token(0)));
-        } 
-        else if self.match_token(&TokenType::Var) {
-            self.advance(); // Consume 'var'
-            if let Some(Token { kind: TokenType::Ident(ident), .. }) = self.current_token(0) {
-                self.advance();
-                if self.match_token(&TokenType::Eq) {
-                    self.advance();
-                    let node_expr = self.parse_expr()?;
-                    return Ok(NodeStmt::VarDecl(ident, node_expr));
-                }
-            }
-            return Err(String::from("Expected an identifier after 'var'"));
         }
-        else if let Some(Token { kind: TokenType::Ident(ident), .. }) = self.current_token(0) {
+        else if self.match_token(&TokenType::Var) {
+            return self.parse_var();
+        }
+        else if let Some(Token { kind: TokenType::Ident(name, _var_type), .. }) = self.current_token(0) {
             self.advance(); // Consume 'ident'
             if self.match_token(&TokenType::Eq) {
                 self.advance(); // Consume '='
                 let expr = self.parse_expr()?;
-                return Ok(NodeStmt::VarShadowing(ident, expr));
+                return Ok(NodeStmt::VarShadowing(name, expr));
             }
             return Err("Expected '=' for Var Shadowing".to_string());
         }
@@ -88,7 +93,58 @@ impl Parser {
             let fn_call_node =  self.parse_fn_calling("print".to_string(), true)?;
             return Ok(NodeStmt::FnCall(fn_call_node));
         }
-        Err(format!("Unexpected {:?}, previous: {:?}, next {:?}", self.current_token(0), self.current_token(-1), self.current_token(1)))
+        Err(format!("Unexpected {:?}, previous: {:?}, next {:?}, while parsing stmt", self.current_token(0), self.current_token(-1), self.current_token(1)))
+    }
+    fn parse_var(&mut self) -> Result<NodeStmt, String> {
+        self.advance(); // Consume 'var'
+
+        if let Some(Token { kind: TokenType::Ident(name, _var_type), .. }) = self.current_token(0) {
+            let ident = self.current_token(0).unwrap();
+            self.advance(); // Consume Ident
+
+            if self.match_token(&TokenType::Eq) {
+                self.advance(); // Consume '='
+
+                if let Some(Token { kind: TokenType::IntLit(_value), .. }) = self.current_token(0) {
+                    let node_expr = self.parse_expr()?;
+                    let result = self.replace_ident_token_type(VarDeclTypes::Expr(node_expr.clone()), ident, name.clone());
+                    println!("Worked: {}", result);
+                    return Ok(NodeStmt::VarDecl(name, VarDeclTypes::Expr(node_expr)));
+                }
+                else if let Some(Token { kind: TokenType::String(string), .. }) = self.current_token(0) {
+                    self.advance(); // Consume String
+                    let result = self.replace_ident_token_type(VarDeclTypes::String(string.clone()), ident, name.clone());
+                    println!("Worked: {}", result);
+
+                    return Ok(NodeStmt::VarDecl(name, VarDeclTypes::String(string)));
+                }
+                else if let Some(Token { kind: TokenType::Bool(bool), .. }) = self.current_token(0) {
+                    self.advance(); // Consume bool
+                    let result = self.replace_ident_token_type(VarDeclTypes::Bool(bool.clone()), ident, name.clone());
+                    println!("Worked: {}", result);
+
+                    return Ok(NodeStmt::VarDecl(name, VarDeclTypes::Bool(bool)));
+                }
+                else if let Some(Token { kind: TokenType::Ident(_ident, var_type), .. }) = self.current_token(0) {
+                    if var_type.is_none() {
+                        panic!("cAN THIS REALLY HQAPPEN? BOH");
+                    }
+                    match var_type.unwrap() {
+                        VarDeclTypes::Expr(expr) => {
+                            return Ok(NodeStmt::VarDecl(name, VarDeclTypes::Expr(expr)));
+                        }
+                        VarDeclTypes::String(string) => {
+                            return Ok(NodeStmt::VarDecl(name, VarDeclTypes::String(string)));
+                        }
+                        VarDeclTypes::Bool(bool) => {
+                            return Ok(NodeStmt::VarDecl(name, VarDeclTypes::Bool(bool)));
+                        }
+                    }
+                }
+            }
+            return Err(format!("Expected A VarDecl Type, found: {:?}", self.current_token(0)));
+        }
+        Err(format!("expected ident found: {:?}", self.current_token(0)))
     }
     
 
@@ -100,12 +156,12 @@ impl Parser {
             }
             return Ok(NodeExpr::IntLiteral(value));
         } 
-        else if let Some(Token { kind: TokenType::Ident(ident), .. }) = self.current_token(0) {
+        else if let Some(Token { kind: TokenType::Ident(name, _var_type), .. }) = self.current_token(0) {
             self.advance();
             if let Some(Token { kind: TokenType::Operators(_), .. }) = self.current_token(0) {
-                return self.parse_math_expr(NodeExpr::Identifier(ident));
+                return self.parse_math_expr(NodeExpr::Identifier(name));
             }
-            return Ok(NodeExpr::Identifier(ident));
+            return Ok(NodeExpr::Identifier(name));
         }
         Err(format!("Unexpected: {:?}", self.current_token(0)))
     }
@@ -206,7 +262,7 @@ impl Parser {
         self.advance(); // Consume '('
 
         if let Some(Token { kind: TokenType::String(argument), .. }) = self.current_token(0)  {
-            self.advance(); // Consume argument
+            self.advance(); // Consume string argument
             if !self.match_token(&TokenType::ClosedParen) {
                 return Err(format!("Expected ')' found {:?}", self.current_token(0)));
             }
@@ -216,6 +272,20 @@ impl Parser {
                 name,
                 is_built_in,
                 argument
+            });
+        }
+        else if let Some(Token { kind: TokenType::Ident(arg_name, _var_type), .. }) = self.current_token(0) {
+            self.advance(); // Consume ident argument
+
+            if !self.match_token(&TokenType::ClosedParen) {
+                return Err(format!("Expected ')' found {:?}", self.current_token(0)));
+            }
+            self.advance(); // Consume ')'
+    
+            return Ok(NodeFnCall {
+                name,
+                is_built_in,
+                argument: arg_name
             });
         }
         return Err(format!("Expected argument String in print func! found {:?}", self.current_token(0)))        

@@ -30,7 +30,7 @@ pub fn run(data: String) -> Option<Vec<Token>> {
                 tokens.push(token);
             }
             else {
-                tokens.push(Token::new(TokenType::Ident(buffer_word.clone())))
+                tokens.push(Token::new(TokenType::Ident(buffer_word.clone(), None)))
             }
         }
         else if ch.is_numeric() || ch == '-' {
@@ -56,24 +56,18 @@ pub fn run(data: String) -> Option<Vec<Token>> {
             buffer_word.push(ch);
             data_as_peekable.next();
             
-            println!("ch {}", ch);
             while let Some(&next_ch) = data_as_peekable.peek() {
-                println!("ch: {}", next_ch);
                 if next_ch != '"' {
                     data_as_peekable.next();
-                    println!("ch: {}", next_ch);
                     buffer_word.push(next_ch);
                 }
                 else {
-                    println!("broke out");
-                    println!("data: {:?}", data_as_peekable);
                     break;
                 }
             }
             buffer_word.push(ch);
             data_as_peekable.next();
 
-            println!("buffer: {}", buffer_word);
             tokens.push(Token::new(TokenType::String(buffer_word.clone())));
             buffer_word.clear();
         } 

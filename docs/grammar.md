@@ -15,9 +15,9 @@
     \\
     \text{[Ident]} &\to 
         \begin{cases}
-            \text{var ident = [NodeExpr]}
+            \text{var ident = [VarDecl]}
             \\
-            \text{ident = [NodeExpr]}
+            \text{ident = [VarDecl]}
         \end{cases}
     \\
     [\text{Expr}] &\to 
@@ -51,6 +51,16 @@
                 \\
             \text{false}
         \end{cases}
+    \\
+    \text{[VarDecl]} &\to
+        \begin{cases}
+            \text{[Expr]}
+            \\
+            \text{[String]}
+            \\
+            \text{[Bool]}
+        \end{cases}
+    \\
 \end{align}
 
 $$

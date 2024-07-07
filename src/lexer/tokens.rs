@@ -1,13 +1,16 @@
 use std::collections::HashMap;
 
+use crate::parser::nodes::VarDeclTypes;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum TokenType {
     Ret,
     IntLit(isize),
+    String(String),
+    Bool(bool),
     OpenParen,
     ClosedParen,
-    Ident(String),
-    String(String),
+    Ident(String, Option<VarDeclTypes>),
     Var,
     Eq,
     Fn,
@@ -16,8 +19,6 @@ pub enum TokenType {
     If,
     While,
     Operators(Operator),
-    True,
-    False,
     ExclamationPoint,
     PrintFn,
 }
@@ -46,7 +47,7 @@ impl Token {
 pub fn create_keyword_map() -> HashMap<String, TokenType> {
     let mut map = HashMap::new();
 
-    map.insert(String::from("ritorna"), TokenType::Ret);
+    map.insert(String::from("return"), TokenType::Ret);
     map.insert(String::from("("), TokenType::OpenParen);
     map.insert(String::from(")"), TokenType::ClosedParen);
     map.insert(String::from("var"), TokenType::Var);
@@ -58,12 +59,12 @@ pub fn create_keyword_map() -> HashMap<String, TokenType> {
     map.insert(String::from("fn"), TokenType::Fn);
     map.insert(String::from("{"), TokenType::OpenCurlyBracket);
     map.insert(String::from("}"), TokenType::ClosedCurlyBracket);
-    map.insert(String::from("se"), TokenType::If);
-    map.insert(String::from("vero"), TokenType::True);
-    map.insert(String::from("falso"), TokenType::False);
-    map.insert(String::from("finché"), TokenType::While);
+    map.insert(String::from("if"), TokenType::If);
+    map.insert(String::from("true"), TokenType::Bool(true));
+    map.insert(String::from("false"), TokenType::Bool(false));
+    map.insert(String::from("while"), TokenType::While);
     map.insert(String::from("!"), TokenType::ExclamationPoint);
-    map.insert(String::from("stampa"), TokenType::PrintFn);
+    map.insert(String::from("print"), TokenType::PrintFn);
     
     map
 }

@@ -3,14 +3,20 @@ use crate::lexer::tokens::Operator;
 #[derive(Debug, Clone)]
 pub enum NodeStmt {
     Return(NodeExpr),
-    VarDecl(String, NodeExpr),
+    VarDecl(String, VarDeclTypes),
     VarShadowing(String, NodeExpr),
     Scope(Vec<NodeStmt>),
     CompilerBuiltInFunctions(BuiltInFunctions),
     FnCall(NodeFnCall)
 }
+#[derive(Debug, PartialEq, Clone, Eq, Hash)]
+pub enum VarDeclTypes {
+    Expr(NodeExpr),
+    String(String),
+    Bool(bool),
+}
 
-#[derive(Debug, Clone)]
+#[derive(Debug, PartialEq, Clone, Eq, Hash)]
 pub enum NodeExpr {
     IntLiteral(isize),
     Identifier(String),
@@ -45,7 +51,7 @@ pub struct NodeFnCall {
     pub is_built_in: bool,
     pub argument: String,
 }
-#[derive(Debug, Clone)]
+#[derive(Debug, PartialEq, Clone, Eq, Hash)]
 pub struct NodeMathExpr {
     pub left_expr: Box<NodeExpr>,
     pub operator: Operator,

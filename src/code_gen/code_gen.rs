@@ -33,7 +33,7 @@ impl CodeGenerator {
     fn visit_stmt(&mut self, stmt: NodeStmt) {
         match stmt {
             NodeStmt::Return(expr) => self.visit_return(expr),
-            NodeStmt::VarDecl(name, expr) => self.visit_var_decl(name, expr),
+            NodeStmt::VarDecl(name, var_decl_possible) => self.visit_var_decl(name, var_decl_possible),
             NodeStmt::VarShadowing(name, expr) => self.visit_var_shadowing(name, expr),
             NodeStmt::Scope(stmts) => self.visit_scope(stmts),
             NodeStmt::CompilerBuiltInFunctions(func) => {
@@ -57,20 +57,38 @@ impl CodeGenerator {
         self.output.push_str(";\n");
     }
 
-    fn visit_var_decl(&mut self, name: String, expr: NodeExpr) {
-        self.output.push_str("    ");
-        self.output.push_str("int ");
-        self.output.push_str(&name);
-        self.output.push_str(" = ");
-        self.visit_expr(expr);
-        self.output.push_str(";\n");
+    fn visit_var_decl(&mut self, name: String, var_types: VarDeclTypes) {
+        self.output.push_str("    "); 
+        match var_types {
+            VarDeclTypes::Expr(expr) => {
+                self.output.push_str("int ");
+                self.output.push_str(&name);
+                self.output.push_str(" = ");
+                self.visit_expr(expr);
+                self.output.push_str(";\n");
+            }
+            VarDeclTypes::String(string) => {
+                self.output.push_str("char ");
+                self.output.push_str(&format!("{}[]", &name));
+                self.output.push_str(" = ");
+                self.output.push_str(&string);
+                self.output.push_str(";\n");
+            },
+            VarDeclTypes::Bool(bool) => {
+                self.output.push_str("bool ");
+                self.output.push_str(&name);
+                self.output.push_str(" = ");
+                self.output.push_str(&bool.to_string());
+                self.output.push_str(";\n");
+            }
+        }
+        
     }
     fn visit_var_shadowing(&mut self, name: String, expr: NodeExpr) {
         self.output.push_str("    ");
         self.output.push_str(&name);
         self.output.push_str(" = ");
         self.visit_expr(expr);
-        self.output.push_str(";\n");
     }
 
     fn visit_expr(&mut self, expr: NodeExpr) {
@@ -154,13 +172,13 @@ impl CodeGenerator {
             if optional_c_name.is_none() {
                 panic!("EXPECTED A BUILT-IN FUNCTION! GOT THIS {}", node_fn_call.name);
             }
-            self.output.push_str(&format!("{}({});\n", optional_c_name.unwrap(), node_fn_call.argument))
+            self.output.push_str(&format!("{}({}\n);\n", optional_c_name.unwrap(), node_fn_call.argument))
         }
         else {
             self.output.push_str(&format!("{}();", node_fn_call.name))
         }
     }
-    pub fn create_built_in_func_map(&mut self) -> HashMap<String, String> {
+    fn create_built_in_func_map(&mut self) -> HashMap<String, String> {
         let mut map = HashMap::new();
     
         map.insert("print".to_string(), "printf".to_string());
